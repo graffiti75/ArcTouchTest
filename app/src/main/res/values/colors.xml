@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Theme -->
+
     <color name="colorPrimary">#424242</color>
     <color name="colorPrimaryDark">#1B1B1B</color>
     <color name="colorAccent">@color/colorPrimary</color>
+
+    <!-- Classical -->
+
+    <color name="color_black">#000000</color>
+    <color name="color_white">#FFFFFF</color>
+
+    <color name="color_gray_dark">#9FA8DA</color>
+    <color name="color_gray_normal">#C5CAE9</color>
+    <color name="color_gray_light">#E8EAF6</color>
+
+    <color name="color_blue_dark">#0277BD</color>
+    <color name="color_blue_normal">#81D4FA</color>
+    <color name="color_blue_light">#E1F5FE</color>
+
+    <color name="color_yellow_dark">#FBC02D</color>
+    <color name="color_yellow_normal">#ECD900</color>
+    <color name="color_yellow_light">#FFFF00</color>
+
+    <color name="color_red_dark">#DD191D</color>
+    <color name="color_red_normal">#F36C60</color>
+    <color name="color_red_light">#FDE0DC</color>
+
+    <color name="color_translucid_overlay">#33000000</color>
 </resources>
