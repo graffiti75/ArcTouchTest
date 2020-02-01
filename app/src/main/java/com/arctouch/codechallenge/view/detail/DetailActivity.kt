@@ -7,8 +7,8 @@ import com.arctouch.codechallenge.AppConfiguration
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.model.data.Cache
-import com.arctouch.codechallenge.util.MovieImageUrlBuilder
-import com.arctouch.codechallenge.util.NavigationUtils
+import com.arctouch.codechallenge.view.util.MovieImageUrlBuilder
+import com.arctouch.codechallenge.view.util.NavigationUtils
 import com.arctouch.codechallenge.view.base.BaseActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions

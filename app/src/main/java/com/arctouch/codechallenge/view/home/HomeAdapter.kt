@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import com.arctouch.codechallenge.AppConfiguration
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.model.Movie
-import com.arctouch.codechallenge.util.MovieImageUrlBuilder
-import com.arctouch.codechallenge.util.openActivityExtras
+import com.arctouch.codechallenge.view.util.MovieImageUrlBuilder
+import com.arctouch.codechallenge.view.util.openActivityExtras
 import com.arctouch.codechallenge.view.detail.DetailActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions

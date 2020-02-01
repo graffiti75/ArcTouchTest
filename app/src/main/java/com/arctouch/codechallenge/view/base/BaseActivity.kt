@@ -25,7 +25,7 @@ abstract class BaseActivity : AppCompatActivity() {
             .build()
     }
 
-    protected val api: TmdbApi = Retrofit.Builder()
+    val api: TmdbApi = Retrofit.Builder()
         .baseUrl(TmdbApi.URL)
 //        .client(OkHttpClient.Builder().build())
         .client(interceptor())
