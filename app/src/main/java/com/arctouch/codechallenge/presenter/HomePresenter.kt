@@ -12,6 +12,5 @@ interface HomePresenter {
     fun showMovies(movieResponse: MutableList<Movie>)
     fun setRecyclerViewScrollListener()
     fun onScrollChanged()
-    fun checkScrollVisibility(totalItemCount: Int)
     fun dispose()
 }

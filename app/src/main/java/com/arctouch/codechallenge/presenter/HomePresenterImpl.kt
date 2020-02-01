@@ -52,6 +52,7 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
     }
 
     override fun getData() {
+        mComposite = CompositeDisposable()
         if (!mActivity.networkOn()) mActivity.showToast(R.string.no_internet)
         else getMovies()
     }
@@ -72,16 +73,15 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
         val moviesList = response.results.map { movie ->
             movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
         }
-        if (mMoviesWithGenres.isNotEmpty()) mMoviesWithGenres.clear()
 
         mMoviesWithGenres.addAll(moviesList)
         Cache.cacheMovies(mMoviesWithGenres)
         showMovies(mMoviesWithGenres)
     }
 
-    override fun showMovies(movieResponse: MutableList<Movie>) {
-        if (movieResponse.isNotEmpty()) {
-            mMoviesWithGenres = movieResponse
+    override fun showMovies(movieList: MutableList<Movie>) {
+        if (movieList.isNotEmpty()) {
+            mMoviesWithGenres = movieList
         }
 
         if (mActivity.recyclerView.adapter == null) {
@@ -105,7 +105,7 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
     override fun onScrollChanged() {
         val totalItemCount = mLinearLayoutManager.itemCount
         if (totalItemCount == mLastVisibleItemPosition + 1) {
-            checkScrollVisibility(totalItemCount)
+            mActivity.progressBar.visibility = View.VISIBLE
             if (!mActivity.networkOn()) mActivity.showToast(R.string.no_internet)
             else {
                 mPage += 1
@@ -113,11 +113,6 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
                 mActivity.recyclerView!!.removeOnScrollListener(mScrollListener)
             }
         }
-    }
-
-    override fun checkScrollVisibility(totalItemCount: Int) {
-        if (totalItemCount == mTotalMovies) mActivity.progressBar.visibility = View.GONE
-        else mActivity.progressBar.visibility = View.VISIBLE
     }
 
     override fun dispose() {
