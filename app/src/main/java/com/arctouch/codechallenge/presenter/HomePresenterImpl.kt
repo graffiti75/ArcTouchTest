@@ -2,7 +2,9 @@ package com.arctouch.codechallenge.presenter
 
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.Menu
 import android.view.View
+import android.widget.SearchView
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.model.UpcomingMoviesResponse
@@ -30,13 +32,15 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
 
     private lateinit var mMoviesAdapter: HomeAdapter
     private lateinit var mLinearLayoutManager: LinearLayoutManager
-    private var mMoviesWithGenres: MutableList<Movie> = arrayListOf()
 
+    private var mMoviesWithGenres: MutableList<Movie> = arrayListOf()
     private var mPage: Long = 1
-    private var mTotalMovies = 0
+    private lateinit var mMovieName : String
 
     private val mLastVisibleItemPosition: Int
         get() = mLinearLayoutManager.findLastVisibleItemPosition()
+
+    private lateinit var mSearchView: SearchView
 
     //--------------------------------------------------
     // Override Methods
@@ -63,34 +67,71 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 Cache.cacheGenres(it.genres)
-                getMovies()
+                getMovies(false)
             }
         mComposite.add(subscription)
     }
 
-    override fun getMovies() {
+    override fun initMenu(menu: Menu) {
+        val searchItem = menu.findItem(R.id.search)
+        mSearchView = searchItem.actionView as SearchView
+        mSearchView.queryHint = mActivity.getString(R.string.search_hint)
+        mSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                try {
+                    clearMoviesList(query)
+                    searchMovies()
+                } catch (e: Exception) {
+                    mActivity.showToast(R.string.search_error)
+                }
+                searchItem.collapseActionView()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                return true
+            }
+        })
+    }
+
+    override fun clearMoviesList(query: String) {
+        mPage = 1
+        mMovieName = query
+        mMoviesWithGenres.clear()
+    }
+
+    override fun searchMovies() {
+        val subscription = mActivity.api.search(TmdbApi.API_KEY, mMovieName, mPage)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                getMoviesOnSuccess(true, it)
+            }
+        mComposite.add(subscription)
+    }
+
+    override fun getMovies(isToolbarMenuSearch: Boolean) {
         val subscription = mActivity.api.upcomingMovies(
             TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, mPage, TmdbApi.DEFAULT_REGION)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                getMoviesOnSuccess(it)
+                getMoviesOnSuccess(isToolbarMenuSearch, it)
             }
         mComposite.add(subscription)
     }
 
-    override fun getMoviesOnSuccess(response: UpcomingMoviesResponse) {
-        mTotalMovies = response.totalResults
+    override fun getMoviesOnSuccess(isToolbarMenuSearch: Boolean, response: UpcomingMoviesResponse) {
         val moviesList = response.results.map { movie ->
             movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
         }
 
         mMoviesWithGenres.addAll(moviesList)
         Cache.cacheMovies(mMoviesWithGenres)
-        showMovies(mMoviesWithGenres)
+        showMovies(isToolbarMenuSearch, mMoviesWithGenres)
     }
 
-    override fun showMovies(movieList: MutableList<Movie>) {
+    override fun showMovies(isToolbarMenuSearch: Boolean, movieList: MutableList<Movie>) {
         if (movieList.isNotEmpty()) {
             mMoviesWithGenres = movieList
         }
@@ -98,29 +139,34 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
         if (mActivity.recyclerView.adapter == null) {
             setAdapter()
             mActivity.recyclerView.adapter = mMoviesAdapter
-        } else mMoviesAdapter.notifyDataSetChanged()
-        mActivity.progressBar.visibility = View.GONE
-        setRecyclerViewScrollListener()
-    }
-
-    override fun setRecyclerViewScrollListener() {
-        mScrollListener = object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                onScrollChanged()
-            }
+        } else {
+            mMoviesAdapter.notifyDataSetChanged()
         }
-        mActivity.recyclerView.addOnScrollListener(mScrollListener)
+        mActivity.progressBar.visibility = View.GONE
+        setRecyclerViewScrollListener(isToolbarMenuSearch)
     }
 
-    override fun onScrollChanged() {
+    override fun setRecyclerViewScrollListener(isToolbarMenuSearch: Boolean) {
+//        if (!isToolbarMenuSearch) {
+            mScrollListener = object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    onScrollChanged(isToolbarMenuSearch)
+                }
+            }
+            mActivity.recyclerView.addOnScrollListener(mScrollListener)
+//        }
+    }
+
+    override fun onScrollChanged(isToolbarMenuSearch: Boolean) {
         val totalItemCount = mLinearLayoutManager.itemCount
         if (totalItemCount == mLastVisibleItemPosition + 1) {
             mActivity.progressBar.visibility = View.VISIBLE
             if (!mActivity.networkOn()) mActivity.showToast(R.string.no_internet)
             else {
                 mPage += 1
-                getMovies()
+                if (isToolbarMenuSearch) searchMovies()
+                else getMovies(false)
                 mActivity.recyclerView!!.removeOnScrollListener(mScrollListener)
             }
         }
