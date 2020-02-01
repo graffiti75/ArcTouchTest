@@ -54,7 +54,18 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
     override fun getData() {
         mComposite = CompositeDisposable()
         if (!mActivity.networkOn()) mActivity.showToast(R.string.no_internet)
-        else getMovies()
+        else getGenres()
+    }
+
+    override fun getGenres() {
+        val subscription = mActivity.api.genres(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                Cache.cacheGenres(it.genres)
+                getMovies()
+            }
+        mComposite.add(subscription)
     }
 
     override fun getMovies() {

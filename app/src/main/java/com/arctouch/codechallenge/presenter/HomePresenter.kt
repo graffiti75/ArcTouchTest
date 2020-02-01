@@ -7,6 +7,7 @@ interface HomePresenter {
     fun setRecyclerView()
     fun setAdapter()
     fun getData()
+    fun getGenres()
     fun getMovies()
     fun getMoviesOnSuccess(response: UpcomingMoviesResponse)
     fun showMovies(movieResponse: MutableList<Movie>)
