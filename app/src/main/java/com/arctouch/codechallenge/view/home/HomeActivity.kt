@@ -1,13 +1,12 @@
 package com.arctouch.codechallenge.view.home
 
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.view.Menu
-import android.view.MenuItem
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.presenter.HomePresenterImpl
-import com.arctouch.codechallenge.view.base.BaseActivity
 
-class HomeActivity : BaseActivity() {
+class HomeActivity : AppCompatActivity() {
 
     private lateinit var mHomePresenter: HomePresenterImpl
 

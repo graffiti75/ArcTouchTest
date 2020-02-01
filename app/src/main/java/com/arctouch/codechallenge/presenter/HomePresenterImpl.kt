@@ -8,6 +8,7 @@ import android.widget.SearchView
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.model.UpcomingMoviesResponse
+import com.arctouch.codechallenge.model.api.RetrofitClient
 import com.arctouch.codechallenge.model.api.TmdbApi
 import com.arctouch.codechallenge.model.data.Cache
 import com.arctouch.codechallenge.view.home.HomeActivity
@@ -42,6 +43,8 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
 
     private lateinit var mSearchView: SearchView
 
+    private val mRetrofitApi by lazy { RetrofitClient.create() }
+
     //--------------------------------------------------
     // Override Methods
     //--------------------------------------------------
@@ -62,7 +65,7 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
     }
 
     override fun getGenres() {
-        val subscription = mActivity.api.genres(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
+        val subscription = mRetrofitApi.genres(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
@@ -101,7 +104,7 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
     }
 
     override fun searchMovies() {
-        val subscription = mActivity.api.search(TmdbApi.API_KEY, mMovieName, mPage)
+        val subscription = mRetrofitApi.search(TmdbApi.API_KEY, mMovieName, mPage)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
@@ -111,7 +114,7 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
     }
 
     override fun getMovies(isToolbarMenuSearch: Boolean) {
-        val subscription = mActivity.api.upcomingMovies(
+        val subscription = mRetrofitApi.upcomingMovies(
             TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, mPage, TmdbApi.DEFAULT_REGION)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
