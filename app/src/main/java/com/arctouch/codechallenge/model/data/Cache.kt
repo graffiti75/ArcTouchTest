@@ -6,13 +6,13 @@ import com.arctouch.codechallenge.model.Movie
 object Cache {
 
     var genres = listOf<Genre>()
-    var movies = listOf<Movie>()
+    var movies = mutableListOf<Movie>()
 
     fun cacheGenres(genres: List<Genre>) {
         this.genres = genres
     }
 
-    fun cacheMovies(movies: List<Movie>) {
-        this.movies = movies
+    fun cacheMovies(newList: MutableList<Movie>) {
+        this.movies.addAll(newList)
     }
 }
