@@ -15,11 +15,11 @@ interface HomePresenter {
     fun clearMoviesList(query: String)
     fun searchMovies()
 
-    fun getMovies(isToolbarMenuSearch: Boolean)
-    fun getMoviesOnSuccess(isToolbarMenuSearch: Boolean, response: UpcomingMoviesResponse)
-    fun showMovies(isToolbarMenuSearch: Boolean, movieResponse: MutableList<Movie>)
+    fun getMovies()
+    fun getMoviesOnSuccess(response: UpcomingMoviesResponse)
+    fun showMovies(movieResponse: MutableList<Movie>)
 
-    fun setRecyclerViewScrollListener(isToolbarMenuSearch: Boolean)
-    fun onScrollChanged(isToolbarMenuSearch: Boolean)
+    fun setRecyclerViewScrollListener()
+    fun onScrollChanged()
     fun dispose()
 }

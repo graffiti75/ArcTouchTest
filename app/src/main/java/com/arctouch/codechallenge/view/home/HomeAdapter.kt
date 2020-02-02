@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import com.arctouch.codechallenge.AppConfiguration
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.model.Movie
+import com.arctouch.codechallenge.view.detail.DetailActivity
 import com.arctouch.codechallenge.view.util.MovieImageUrlBuilder
 import com.arctouch.codechallenge.view.util.openActivityExtras
-import com.arctouch.codechallenge.view.detail.DetailActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.movie_item.view.*
@@ -36,13 +36,13 @@ class HomeAdapter(private val activity: HomeActivity, private val movies: Mutabl
             itemView.releaseDateTextView.text = movie.releaseDate
 
             Glide.with(itemView)
-                .load(movie.posterPath?.let { movieImageUrlBuilder.buildPosterUrl(it) })
-                .apply(RequestOptions().placeholder(R.drawable.ic_image_placeholder))
-                .into(itemView.posterImageView)
+                    .load(movie.posterPath?.let { movieImageUrlBuilder.buildPosterUrl(it) })
+                    .apply(RequestOptions().placeholder(R.drawable.ic_image_placeholder))
+                    .into(itemView.posterImageView)
 
             itemView.cardView.setOnClickListener {
                 activity.openActivityExtras(activity, DetailActivity::class.java,
-                    AppConfiguration.MOVIE_ID_EXTRA, movie.id)
+                        AppConfiguration.MOVIE_ID_EXTRA, movie.id)
             }
         }
     }

@@ -28,7 +28,7 @@ object RetrofitClient {
         else HttpLoggingInterceptor.Level.NONE
 
         return OkHttpClient.Builder()
-                .addInterceptor(logging)
-                .build()
+            .addInterceptor(logging)
+            .build()
     }
 }

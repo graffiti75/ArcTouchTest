@@ -8,6 +8,10 @@ import com.arctouch.codechallenge.presenter.HomePresenterImpl
 
 class HomeActivity : AppCompatActivity() {
 
+    //--------------------------------------------------
+    // Attributes
+    //--------------------------------------------------
+
     private lateinit var mHomePresenter: HomePresenterImpl
 
     //--------------------------------------------------
@@ -37,17 +41,4 @@ class HomeActivity : AppCompatActivity() {
         mHomePresenter.initMenu(menu)
         return super.onCreateOptionsMenu(menu)
     }
-
-    /*
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.upcoming -> {
-                mHomePresenter.clearMoviesList()
-                mHomePresenter.getMovies(false)
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-     */
 }

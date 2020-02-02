@@ -63,7 +63,5 @@
             android:textSize="12sp"
             android:textStyle="italic"
             tools:text="19/12/1997" />
-
     </RelativeLayout>
-
 </android.support.v7.widget.CardView>
