@@ -2,6 +2,7 @@ package com.arctouch.codechallenge.view.detail
 
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import android.view.View
@@ -29,15 +30,7 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.detail_activity)
 
-        val extras = intent.extras
-        if (extras != null) {
-            val movieId = extras.getInt(AppConfiguration.MOVIE_ID_EXTRA)
-            val movie = Cache.movies.filter { movie ->
-                movie.id == movieId
-            }[0]
-            setLayout(movie)
-            progressBar.visibility = View.GONE
-        }
+        getExtras()
     }
 
     override fun onBackPressed() {
@@ -59,6 +52,27 @@ class DetailActivity : AppCompatActivity() {
     // Methods
     //--------------------------------------------------
 
+    private fun setToolbar(title: String) {
+        setSupportActionBar(findViewById(R.id.toolbar))
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        collapsing_toolbar.setExpandedTitleColor(ContextCompat.getColor(this, android.R.color.transparent))
+        collapsing_toolbar.title = title
+    }
+
+    private fun getExtras() {
+        val extras = intent.extras
+        if (extras != null) {
+            val movieId = extras.getInt(AppConfiguration.MOVIE_ID_EXTRA)
+            val movie = Cache.movies.filter { movie ->
+                movie.id == movieId
+            }[0]
+
+            setToolbar(movie.title)
+            setLayout(movie)
+        }
+    }
+
     private fun setLayout(movie: Movie) {
         setImages(movie)
         setGenresTextView(movie)
@@ -78,14 +92,10 @@ class DetailActivity : AppCompatActivity() {
             .apply(RequestOptions().placeholder(R.drawable.ic_image_placeholder))
             .listener(object : RequestListener<Drawable?> {
                 override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable?>?,
-                    isFirstResource: Boolean): Boolean {
-                    progressBar.visibility = View.GONE
-                    return false
-                }
-
+                    isFirstResource: Boolean): Boolean = false
                 override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable?>?,
                     dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-                    progressBar.visibility = View.GONE
+                    id_details__backdrop__image_view__progress_bar.visibility = View.GONE
                     return false
                 }
             })
@@ -104,6 +114,7 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun setOtherTexts(movie: Movie) {
+        id_details__title__text_view.text = movie.title
         id_details__name__text_view.text = movie.title
         id_details__release_date__text_view.text = movie.releaseDate
         id_details__overview__text_view.text = movie.overview
