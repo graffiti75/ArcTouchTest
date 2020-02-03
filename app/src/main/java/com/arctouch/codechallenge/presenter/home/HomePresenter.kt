@@ -23,6 +23,6 @@ interface HomePresenter {
 
     fun setRecyclerViewScrollListener()
     fun onScrollChanged()
-    fun checkScrollingEnd()
+//    fun checkScrollingEnd()
     fun dispose()
 }

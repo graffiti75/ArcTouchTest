@@ -7,7 +7,6 @@ import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.View
 import android.widget.SearchView
-import com.arctouch.codechallenge.AppConfiguration
 import com.arctouch.codechallenge.R
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.model.UpcomingMoviesResponse
@@ -23,7 +22,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.home_activity.*
-import kotlin.math.ceil
 
 class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
 
@@ -161,7 +159,7 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
             Cache.cacheMovies(moviesList as MutableList<Movie>)
         }
 
-        checkScrollingEnd()
+        mMovieViewModel.checkScrollingEnd(mTotalResultsFromApi)
         showMovies(mMoviesWithGenres)
     }
 
@@ -200,12 +198,14 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
         } else mActivity.progressBar.visibility = View.GONE
     }
 
+    /*
     override fun checkScrollingEnd() {
         val pagesNeeded = ceil((mTotalResultsFromApi.toFloat() / AppConfiguration.MOVIES_PER_PAGE.toFloat()))
         mMovieViewModel.pagesNeeded = pagesNeeded.toInt()
         val noMoreScrolling : Boolean = mMovieViewModel.page >= pagesNeeded.toLong()
         mMovieViewModel.noMoreScrolling = noMoreScrolling
     }
+     */
 
     override fun dispose() {
         mComposite.dispose()
