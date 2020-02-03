@@ -16,6 +16,9 @@ import kotlinx.android.synthetic.main.movie_item.view.*
 
 class HomeAdapter(private val activity: HomeActivity, private val movies: MutableList<Movie>)
     : RecyclerView.Adapter<HomeAdapter.ViewHolder>() {
+//class HomeAdapter(private val activity: HomeActivity) : RecyclerView.Adapter<HomeAdapter.ViewHolder>() {
+
+//    private var movies: List<Movie> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.movie_item, parent, false)
@@ -46,4 +49,9 @@ class HomeAdapter(private val activity: HomeActivity, private val movies: Mutabl
             }
         }
     }
+
+//    fun swapData(movies: List<Movie>) {
+//        this.movies = movies
+//        notifyDataSetChanged()
+//    }
 }

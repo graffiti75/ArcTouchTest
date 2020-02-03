@@ -30,4 +30,16 @@
         <!-- Set title color -->
         <item name="android:textColor">@android:color/white</item>
     </style>
+
+    <!--=============== LAYOUT ===============-->
+
+    <style name="RecyclerView_ScrollbarStyle">
+        <item name="android:scrollbarAlwaysDrawVerticalTrack">true</item>
+        <item name="android:scrollbarStyle">insideOverlay</item>
+        <item name="android:scrollbars">vertical</item>
+        <item name="android:fadeScrollbars">true</item>
+        <item name="android:scrollbarSize">8dp</item>
+        <item name="android:layout_marginRight">3dp</item>
+        <item name="android:scrollbarThumbVertical">@drawable/vertical_scrollbar</item>
+    </style>
 </resources>

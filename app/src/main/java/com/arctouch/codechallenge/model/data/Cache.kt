@@ -15,4 +15,8 @@ object Cache {
     fun cacheMovies(newList: MutableList<Movie>) {
         this.movies.addAll(newList)
     }
+
+    fun clearCacheMovies() {
+        this.movies.clear()
+    }
 }

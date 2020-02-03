@@ -24,7 +24,7 @@ class HomeActivity : AppCompatActivity() {
 
         mHomePresenter = HomePresenterImpl(this)
         mHomePresenter.setRecyclerView()
-        mHomePresenter.getData()
+        mHomePresenter.checkSavedInstanceState(savedInstanceState)
     }
 
     override fun onDestroy() {

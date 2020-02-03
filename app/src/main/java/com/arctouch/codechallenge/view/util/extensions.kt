@@ -10,7 +10,7 @@ import android.os.Bundle
 import android.widget.Toast
 
 fun Context.showToast(message: Int) {
-    Toast.makeText(this, this.getString(message), Toast.LENGTH_LONG).show()
+    Toast.makeText(this, this.getString(message), Toast.LENGTH_SHORT).show()
 }
 
 fun Context.openActivityExtras(activity: Activity, clazz: Class<*>, key: String, value: Any) {

@@ -1,10 +1,12 @@
 package com.arctouch.codechallenge.presenter
 
+import android.os.Bundle
 import android.view.Menu
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.model.UpcomingMoviesResponse
 
 interface HomePresenter {
+    fun checkSavedInstanceState(savedInstanceState: Bundle?)
     fun setRecyclerView()
     fun setAdapter()
 
@@ -17,9 +19,10 @@ interface HomePresenter {
 
     fun getMovies()
     fun getMoviesOnSuccess(response: UpcomingMoviesResponse)
-    fun showMovies(movieResponse: MutableList<Movie>)
+    fun showMovies(movieList: MutableList<Movie>)
 
     fun setRecyclerViewScrollListener()
     fun onScrollChanged()
+    fun checkScrollingEnd()
     fun dispose()
 }

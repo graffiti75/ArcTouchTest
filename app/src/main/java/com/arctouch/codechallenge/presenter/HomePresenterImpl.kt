@@ -1,5 +1,7 @@
 package com.arctouch.codechallenge.presenter
 
+import android.arch.lifecycle.ViewModelProviders
+import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
@@ -12,6 +14,7 @@ import com.arctouch.codechallenge.model.UpcomingMoviesResponse
 import com.arctouch.codechallenge.model.api.RetrofitClient
 import com.arctouch.codechallenge.model.api.TmdbApi
 import com.arctouch.codechallenge.model.data.Cache
+import com.arctouch.codechallenge.view.MoviesViewModel
 import com.arctouch.codechallenge.view.home.HomeActivity
 import com.arctouch.codechallenge.view.home.HomeAdapter
 import com.arctouch.codechallenge.view.util.networkOn
@@ -20,6 +23,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.home_activity.*
+import kotlin.math.ceil
 
 class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
 
@@ -36,21 +40,27 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
     private lateinit var mLinearLayoutManager: LinearLayoutManager
 
     private var mMoviesWithGenres: MutableList<Movie> = arrayListOf()
-    private var mTotalResults: Long = 1
-    private var mPage: Long = 1
     private lateinit var mMovieName : String
-
-    private val mLastVisibleItemPosition: Int
-        get() = mLinearLayoutManager.findLastVisibleItemPosition()
+    private var mTotalResultsFromApi: Long = 1
 
     private lateinit var mSearchView: SearchView
     private var mIsToolbarMenuSearch = false
 
     private val mRetrofitApi by lazy { RetrofitClient.create() }
+    private var mMovieViewModel = ViewModelProviders.of(activity).get(MoviesViewModel::class.java)
 
     //--------------------------------------------------
     // Override Methods
     //--------------------------------------------------
+
+    override fun checkSavedInstanceState(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) getData()
+        else {
+            val moviesViewModel = ViewModelProviders.of(mActivity).get(MoviesViewModel::class.java)
+            val moviesList = moviesViewModel.getMovieList()
+            showMovies(moviesList)
+        }
+    }
 
     override fun setRecyclerView() {
         mLinearLayoutManager = LinearLayoutManager(mActivity)
@@ -67,13 +77,14 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
     }
 
     override fun getGenres() {
-        val subscription = mRetrofitApi.genres(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    Cache.cacheGenres(it.genres)
-                    getMovies()
-                }
+        val subscription = mRetrofitApi.genres(
+        TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                Cache.cacheGenres(it.genres)
+                getMovies()
+            }
         mComposite.add(subscription)
     }
 
@@ -84,77 +95,89 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
         mSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 try {
-                    clearMoviesList(query)
-                    searchMovies()
+                    if (!mActivity.networkOn()) mActivity.showToast(R.string.no_internet)
+                    else {
+                        clearMoviesList(query)
+                        searchMovies()
+                    }
                 } catch (e: Exception) {
                     mActivity.showToast(R.string.search_error)
                 }
                 searchItem.collapseActionView()
                 return false
             }
-
-            override fun onQueryTextChange(newText: String): Boolean {
-                return true
-            }
+            override fun onQueryTextChange(newText: String) = true
         })
     }
 
     override fun clearMoviesList(query: String) {
-        mPage = 1
         mMovieName = query
         mMoviesWithGenres.clear()
+        Cache.clearCacheMovies()
+        mMovieViewModel.page = 1
+        mMovieViewModel.noMoreScrolling = false
+        mMovieViewModel.pagesNeeded = 1
     }
 
     override fun searchMovies() {
-        val subscription = mRetrofitApi.search(TmdbApi.API_KEY, mMovieName, mPage)
+        if (mMovieViewModel.page <= mMovieViewModel.pagesNeeded) {
+            val subscription = mRetrofitApi.search(
+            TmdbApi.API_KEY, mMovieName, mMovieViewModel.page.toLong())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     mIsToolbarMenuSearch = true
                     getMoviesOnSuccess(it)
                 }
-        mComposite.add(subscription)
+            mComposite.add(subscription)
+        }
     }
 
     override fun getMovies() {
-        val subscription = mRetrofitApi.upcomingMovies(
-                TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, mPage, TmdbApi.DEFAULT_REGION)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    mIsToolbarMenuSearch = false
-                    getMoviesOnSuccess(it)
-                }
-        mComposite.add(subscription)
+        if (!mActivity.networkOn()) mActivity.showToast(R.string.no_internet)
+        else {
+            if (mMovieViewModel.page <= mMovieViewModel.pagesNeeded) {
+                val subscription = mRetrofitApi.upcomingMovies(
+                    TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, mMovieViewModel.page.toLong(), TmdbApi.DEFAULT_REGION)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        mIsToolbarMenuSearch = false
+                        getMoviesOnSuccess(it)
+                    }
+                mComposite.add(subscription)
+            }
+        }
     }
 
     override fun getMoviesOnSuccess(response: UpcomingMoviesResponse) {
         val moviesList = response.results.map { movie ->
             movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
         }
+        mTotalResultsFromApi = response.totalResults
 
-        mMoviesWithGenres.addAll(moviesList)
-        Cache.cacheMovies(mMoviesWithGenres)
+        if (!mMovieViewModel.noMoreScrolling) {
+            mMoviesWithGenres.addAll(moviesList)
+            Cache.cacheMovies(moviesList as MutableList<Movie>)
+        }
+
+        checkScrollingEnd()
         showMovies(mMoviesWithGenres)
     }
 
     override fun showMovies(movieList: MutableList<Movie>) {
-        if (movieList.isNotEmpty()) {
-            mMoviesWithGenres = movieList
-        }
+        if (movieList.isNotEmpty()) mMoviesWithGenres = movieList
 
         if (mActivity.recyclerView.adapter == null) {
             setAdapter()
             mActivity.recyclerView.adapter = mMoviesAdapter
-        } else {
-            mMoviesAdapter.notifyDataSetChanged()
-        }
+        } else mMoviesAdapter.notifyDataSetChanged()
+
         mActivity.progressBar.visibility = View.GONE
         setRecyclerViewScrollListener()
     }
 
     override fun setRecyclerViewScrollListener() {
-//        if (!mIsToolbarMenuSearch) {
         mScrollListener = object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -162,22 +185,26 @@ class HomePresenterImpl(activity: HomeActivity) : HomePresenter {
             }
         }
         mActivity.recyclerView.addOnScrollListener(mScrollListener)
-//        }
     }
 
     override fun onScrollChanged() {
-        val totalItemCount = mLinearLayoutManager.itemCount
-        if (totalItemCount == mLastVisibleItemPosition + 1) {
-            mTotalResults = mPage * AppConfiguration.MOVIES_PER_PAGE + totalItemCount // TODO Apply this logic
-            mActivity.progressBar.visibility = View.VISIBLE
-            if (!mActivity.networkOn()) mActivity.showToast(R.string.no_internet)
-            else {
-                mPage += 1
-                if (mIsToolbarMenuSearch) searchMovies()
-                else getMovies()
-                mActivity.recyclerView!!.removeOnScrollListener(mScrollListener)
-            }
-        }
+        if (!mMovieViewModel.noMoreScrolling) {
+                mActivity.progressBar.visibility = View.VISIBLE
+                if (!mActivity.networkOn()) mActivity.showToast(R.string.no_internet)
+                else {
+                    mMovieViewModel.page += 1
+                    if (mIsToolbarMenuSearch) searchMovies()
+                    else getMovies()
+                    mActivity.recyclerView!!.removeOnScrollListener(mScrollListener)
+                }
+        } else mActivity.progressBar.visibility = View.GONE
+    }
+
+    override fun checkScrollingEnd() {
+        val pagesNeeded = ceil((mTotalResultsFromApi.toFloat() / AppConfiguration.MOVIES_PER_PAGE.toFloat()))
+        mMovieViewModel.pagesNeeded = pagesNeeded.toInt()
+        val noMoreScrolling : Boolean = mMovieViewModel.page >= pagesNeeded.toLong()
+        mMovieViewModel.noMoreScrolling = noMoreScrolling
     }
 
     override fun dispose() {
