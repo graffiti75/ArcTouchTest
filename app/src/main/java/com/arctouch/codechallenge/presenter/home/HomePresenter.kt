@@ -1,4 +1,4 @@
-package com.arctouch.codechallenge.presenter
+package com.arctouch.codechallenge.presenter.home
 
 import android.os.Bundle
 import android.view.Menu

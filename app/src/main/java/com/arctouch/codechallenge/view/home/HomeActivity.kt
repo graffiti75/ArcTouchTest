@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import com.arctouch.codechallenge.R
-import com.arctouch.codechallenge.presenter.HomePresenterImpl
+import com.arctouch.codechallenge.presenter.home.HomePresenterImpl
 
 class HomeActivity : AppCompatActivity() {
 
